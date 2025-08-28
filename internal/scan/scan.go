@@ -146,8 +146,6 @@ func ScanDir(root string) ([]Endpoint, error) {
 			add(a)
 		}
 
-		// Use global function bodies (already collected in first pass)
-
 		// calls
 		ast.Inspect(file, func(n ast.Node) bool {
 			call, ok := n.(*ast.CallExpr)

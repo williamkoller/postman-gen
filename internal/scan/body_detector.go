@@ -127,51 +127,6 @@ func checkIOReadAll(call *ast.CallExpr) bool {
 	return false
 }
 
-// generateGinBodyExample creates a JSON example based on Gin binding
-func generateGinBodyExample(call *ast.CallExpr) string {
-	if len(call.Args) > 0 {
-		// Try to extract the variable being bound to
-		if unary, ok := call.Args[0].(*ast.UnaryExpr); ok {
-			if ident, ok := unary.X.(*ast.Ident); ok {
-				return generateBodyByVariableName(ident.Name)
-			}
-		}
-	}
-	return `{"data":"string","parameters":{}}`
-}
-
-// generateStandardBodyExample creates a JSON example for standard library usage
-func generateStandardBodyExample(call *ast.CallExpr) string {
-	if len(call.Args) > 0 {
-		// Try to extract the variable being decoded to
-		if unary, ok := call.Args[0].(*ast.UnaryExpr); ok {
-			if ident, ok := unary.X.(*ast.Ident); ok {
-				return generateBodyByVariableName(ident.Name)
-			}
-		}
-	}
-	return `{"data":"string","parameters":{}}`
-}
-
-// generateUnmarshalBodyExample creates a JSON example for json.Unmarshal
-func generateUnmarshalBodyExample(call *ast.CallExpr) string {
-	if len(call.Args) > 1 {
-		// Second argument is usually the target variable
-		if unary, ok := call.Args[1].(*ast.UnaryExpr); ok {
-			if ident, ok := unary.X.(*ast.Ident); ok {
-				return generateBodyByVariableName(ident.Name)
-			}
-		}
-	}
-	return `{"id":"string","name":"string","value":"string","timestamp":"2024-01-01T00:00:00Z"}`
-}
-
-// generateIOReadAllBodyExample creates a JSON example for io.ReadAll pattern
-func generateIOReadAllBodyExample(call *ast.CallExpr, functionName string) string {
-	// For io.ReadAll, we generate based on function name context
-	return generateBodyByVariableName(functionName)
-}
-
 // generateBodyByVariableName creates JSON based on variable name patterns
 func generateBodyByVariableName(varName string) string {
 	lowerName := strings.ToLower(varName)
@@ -312,12 +267,12 @@ func generateSmartBodyExample(call *ast.CallExpr, structInfo *StructInfo) string
 			return body
 		}
 	}
-	
+
 	// Fallback to local struct analysis
 	if structInfo != nil && len(structInfo.Fields) > 0 {
 		return generateJSONFromStruct(structInfo)
 	}
-	
+
 	// Fallback to variable name analysis
 	if len(call.Args) > 0 {
 		if unary, ok := call.Args[0].(*ast.UnaryExpr); ok {
@@ -334,7 +289,7 @@ func generateSmartBodyExample(call *ast.CallExpr, structInfo *StructInfo) string
 			}
 		}
 	}
-	
+
 	return `{"data":"string","parameters":{}}`
 }
 
@@ -383,7 +338,7 @@ func generateValueForType(goType string) string {
 func generateBodyFromProjectAnalysis(call *ast.CallExpr, analysis *ProjectAnalysis) string {
 	// Try to extract the variable type being decoded to
 	var targetTypeName string
-	
+
 	if len(call.Args) > 0 {
 		if unary, ok := call.Args[0].(*ast.UnaryExpr); ok {
 			if ident, ok := unary.X.(*ast.Ident); ok {
@@ -391,18 +346,18 @@ func generateBodyFromProjectAnalysis(call *ast.CallExpr, analysis *ProjectAnalys
 				for _, structDef := range analysis.Structs {
 					lowerStructName := strings.ToLower(structDef.Name)
 					lowerVarName := strings.ToLower(ident.Name)
-					
+
 					// Match by variable name pattern
 					if strings.Contains(lowerStructName, lowerVarName) ||
-					   strings.Contains(lowerVarName, lowerStructName) ||
-					   isStructNameMatch(lowerVarName, lowerStructName) {
+						strings.Contains(lowerVarName, lowerStructName) ||
+						isStructNameMatch(lowerVarName, lowerStructName) {
 						return generateJSONFromProjectStruct(structDef)
 					}
 				}
 				targetTypeName = ident.Name
 			}
 		}
-		
+
 		// For json.Unmarshal, second argument is the target
 		if len(call.Args) > 1 {
 			if unary, ok := call.Args[1].(*ast.UnaryExpr); ok {
@@ -410,10 +365,10 @@ func generateBodyFromProjectAnalysis(call *ast.CallExpr, analysis *ProjectAnalys
 					for _, structDef := range analysis.Structs {
 						lowerStructName := strings.ToLower(structDef.Name)
 						lowerVarName := strings.ToLower(ident.Name)
-						
+
 						if strings.Contains(lowerStructName, lowerVarName) ||
-						   strings.Contains(lowerVarName, lowerStructName) ||
-						   isStructNameMatch(lowerVarName, lowerStructName) {
+							strings.Contains(lowerVarName, lowerStructName) ||
+							isStructNameMatch(lowerVarName, lowerStructName) {
 							return generateJSONFromProjectStruct(structDef)
 						}
 					}
@@ -422,7 +377,7 @@ func generateBodyFromProjectAnalysis(call *ast.CallExpr, analysis *ProjectAnalys
 			}
 		}
 	}
-	
+
 	// Look for DTOs that match common patterns
 	if targetTypeName != "" {
 		for _, dtoPattern := range analysis.ArchPattern.DTOPatterns {
@@ -433,7 +388,7 @@ func generateBodyFromProjectAnalysis(call *ast.CallExpr, analysis *ProjectAnalys
 			}
 		}
 	}
-	
+
 	return ""
 }
 
@@ -442,14 +397,14 @@ func isStructNameMatch(varName, structName string) bool {
 	// Remove common suffixes from struct names for matching
 	cleanStructName := structName
 	suffixes := []string{"request", "req", "dto", "model", "entity", "response", "resp"}
-	
+
 	for _, suffix := range suffixes {
 		if strings.HasSuffix(cleanStructName, suffix) {
 			cleanStructName = strings.TrimSuffix(cleanStructName, suffix)
 			break
 		}
 	}
-	
+
 	return strings.Contains(varName, cleanStructName) || strings.Contains(cleanStructName, varName)
 }
 
@@ -458,13 +413,13 @@ func generateJSONFromProjectStruct(structDef *StructDefinition) string {
 	if len(structDef.Fields) == 0 {
 		return `{}`
 	}
-	
+
 	var jsonPairs []string
 	for _, field := range structDef.Fields {
 		if field.JSONTag == "-" {
 			continue // Skip fields marked as ignored
 		}
-		
+
 		value := generateValueForType(field.Type)
 		jsonTag := field.JSONTag
 		if jsonTag == "" {
@@ -472,7 +427,7 @@ func generateJSONFromProjectStruct(structDef *StructDefinition) string {
 		}
 		jsonPairs = append(jsonPairs, fmt.Sprintf(`"%s":%s`, jsonTag, value))
 	}
-	
+
 	return "{" + strings.Join(jsonPairs, ",") + "}"
 }
 
