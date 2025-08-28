@@ -538,19 +538,28 @@ func contains(ss []string, s string) bool {
 
 // isHeaderLikeFormat checks if a string looks like an HTTP header name (Title-Case-Format)
 func isHeaderLikeFormat(s string) bool {
+	// Must contain at least one hyphen
+	if !strings.Contains(s, "-") {
+		return false
+	}
+
 	// Split by hyphens and check if each part starts with uppercase
 	parts := strings.Split(s, "-")
+	validParts := 0
+
 	for _, part := range parts {
 		if len(part) == 0 {
-			continue
+			return false // Empty parts like "X-" should return false
 		}
-		// Check if first character is uppercase and rest are lowercase or mixed case
+		// Check if first character is uppercase
 		first := rune(part[0])
 		if first < 'A' || first > 'Z' {
 			return false
 		}
+		validParts++
 	}
-	return len(parts) > 1 // Must have at least one hyphen
+
+	return validParts >= 2 // Must have at least 2 valid parts
 }
 
 // isValidEndpointPath validates if a string is a valid HTTP endpoint path
