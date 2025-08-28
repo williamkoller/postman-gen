@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            filename: postman-gen-linux-amd64
+          - goos: linux
+            goarch: arm64
+            filename: postman-gen-linux-arm64
+          - goos: windows
+            goarch: amd64
+            filename: postman-gen-windows-amd64.exe
+          - goos: windows
+            goarch: arm64
+            filename: postman-gen-windows-arm64.exe
+          - goos: darwin
+            goarch: amd64
+            filename: postman-gen-darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            filename: postman-gen-darwin-arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          go build -v -ldflags="-s -w -X main.version=${{ github.ref_name }}" -o ${{ matrix.filename }} ./cmd/postman-gen
+
+      - name: Create checksums
+        run: |
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            sha256sum ${{ matrix.filename }} > ${{ matrix.filename }}.sha256
+          else
+            sha256sum ${{ matrix.filename }} > ${{ matrix.filename }}.sha256
+          fi
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ matrix.filename }}
+            ${{ matrix.filename }}.sha256
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## 🚀 Release ${{ github.ref_name }}
+
+            ### 📦 Installation
+
+            #### Linux/macOS
+            ```bash
+            # Download the appropriate binary for your system
+            curl -L -o postman-gen https://github.com/williamkoller/postman-gen/releases/download/${{ github.ref_name }}/postman-gen-linux-amd64
+            chmod +x postman-gen
+            sudo mv postman-gen /usr/local/bin/
+            ```
+
+            #### Windows
+            Download `postman-gen-windows-amd64.exe` and add it to your PATH.
+
+            ### 🔍 Usage
+            ```bash
+            postman-gen -dir ./your-project -name "My API" -out collection.json
+            ```
+
+            ### 📋 What's Changed
+            - See [CHANGELOG.md](https://github.com/williamkoller/postman-gen/blob/main/CHANGELOG.md) for detailed changes
+
+            ### 🔐 Checksums
+            All binaries include SHA256 checksums for verification.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
