@@ -21,6 +21,12 @@ A powerful Go tool that automatically generates Postman collections and environm
 
 ## Installation
 
+### Via go install (Recomendado)
+
+```bash
+go install github.com/williamkoller/postman-gen/cmd/postman-gen@latest
+```
+
 ### Build from source
 
 ```bash
