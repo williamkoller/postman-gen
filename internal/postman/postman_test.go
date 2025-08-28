@@ -49,7 +49,20 @@ func TestBuildCollection_Golden(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read golden: %v", err)
 	}
-	if !bytes.Equal(bytes.TrimSpace(want), bytes.TrimSpace(norm)) {
-		t.Errorf("collection differs.\n--- got:\n%s\n--- want:\n%s", string(norm), string(want))
+	// Parse both JSONs to compare structure instead of raw bytes
+	var gotJSON, wantJSON interface{}
+	if err := json.Unmarshal(norm, &gotJSON); err != nil {
+		t.Fatalf("failed to parse generated JSON: %v", err)
+	}
+	if err := json.Unmarshal(want, &wantJSON); err != nil {
+		t.Fatalf("failed to parse golden JSON: %v", err)
+	}
+
+	// Convert back to normalized JSON for comparison
+	gotNorm, _ := json.MarshalIndent(gotJSON, "", "  ")
+	wantNorm, _ := json.MarshalIndent(wantJSON, "", "  ")
+
+	if !bytes.Equal(gotNorm, wantNorm) {
+		t.Errorf("collection differs.\n--- got:\n%s\n--- want:\n%s", string(gotNorm), string(wantNorm))
 	}
 }
