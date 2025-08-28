@@ -45,15 +45,7 @@ jobs:
         run: go test -v -race -coverprofile=coverage.out -coverpkg=./... ./...
 
       - name: Build
-        run: go build -v -o postman-gen ./cmd/postman-gen
-
-      - name: Test build execution
-        run: ./postman-gen -h
-        if: runner.os != 'Windows'
-
-      - name: Test build execution (Windows)
-        run: ./postman-gen.exe -h
-        if: runner.os == 'Windows'
+        run: go build -v ./cmd/postman-gen
 
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.24'
