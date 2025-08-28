@@ -1,0 +1,119 @@
+{
+  "info": {
+    "_postman_id": "00000000-0000-0000-0000-000000000000",
+    "name": "Teste API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "item": [
+        {
+          "item": [
+            {
+              "item": [
+                {
+                  "name": "GET /v1/orders/{id}",
+                  "request": {
+                    "description": "Get order",
+                    "header": [],
+                    "method": "GET",
+                    "url": {
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "orders",
+                        "{id}"
+                      ],
+                      "raw": "{{baseUrl}}/v1/orders/{id}"
+                    }
+                  }
+                }
+              ],
+              "name": "GET"
+            }
+          ],
+          "name": "orders"
+        },
+        {
+          "item": [
+            {
+              "item": [
+                {
+                  "name": "GET /v1/users",
+                  "request": {
+                    "description": "Source: a.go",
+                    "header": [],
+                    "method": "GET",
+                    "url": {
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "users"
+                      ],
+                      "raw": "{{baseUrl}}/v1/users"
+                    }
+                  }
+                }
+              ],
+              "name": "GET"
+            },
+            {
+              "item": [
+                {
+                  "name": "POST /v1/users",
+                  "request": {
+                    "body": {
+                      "mode": "raw",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      },
+                      "raw": "{\"a\":1}"
+                    },
+                    "description": "Source: a.go",
+                    "header": [
+                      {
+                        "key": "X-Req",
+                        "value": "1"
+                      },
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      }
+                    ],
+                    "method": "POST",
+                    "url": {
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "v1",
+                        "users"
+                      ],
+                      "raw": "{{baseUrl}}/v1/users"
+                    }
+                  }
+                }
+              ],
+              "name": "POST"
+            }
+          ],
+          "name": "users"
+        }
+      ],
+      "name": "v1"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "type": "string",
+      "value": "http://localhost:8080"
+    }
+  ]
+}
