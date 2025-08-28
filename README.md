@@ -52,16 +52,16 @@ go run cmd/postman-gen/main.go [flags]
 ### Advanced Usage
 
 ```bash
-./postman-gen \
-  -dir ./my-api \
-  -name "My API Collection" \
+.postman-gen \                                                      
+  -dir ./project \
+  -name "Stripe Payment API" \
   -base-url "https://api.example.com" \
   -group-depth 2 \
   -group-by-method \
   -tag-folders \
-  -out ./collection.postman.json \
-  -env-out ./environment.postman_environment.json \
-  -env-name "Production"
+  -out ./project/collection.postman.json \
+  -env-out ./project/environment.postman_environment.json \
+  -env-name "Localhost"
 ```
 
 ## Command Line Options
