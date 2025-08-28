@@ -78,7 +78,7 @@ func ScanDir(root string) ([]Endpoint, error) {
 	projectAnalysis, projectErr := AnalyzeProject(root)
 	if projectErr != nil {
 		// If project analysis fails, continue with the old method
-		projectAnalysis = nil
+		globalProjectAnalysis = nil
 	} else {
 		// Set global project analysis for use in body detection
 		globalProjectAnalysis = projectAnalysis
@@ -536,6 +536,23 @@ func contains(ss []string, s string) bool {
 	return false
 }
 
+// isHeaderLikeFormat checks if a string looks like an HTTP header name (Title-Case-Format)
+func isHeaderLikeFormat(s string) bool {
+	// Split by hyphens and check if each part starts with uppercase
+	parts := strings.Split(s, "-")
+	for _, part := range parts {
+		if len(part) == 0 {
+			continue
+		}
+		// Check if first character is uppercase and rest are lowercase or mixed case
+		first := rune(part[0])
+		if first < 'A' || first > 'Z' {
+			return false
+		}
+	}
+	return len(parts) > 1 // Must have at least one hyphen
+}
+
 // isValidEndpointPath validates if a string is a valid HTTP endpoint path
 func isValidEndpointPath(path string) bool {
 	if path == "" {
@@ -566,7 +583,7 @@ func isValidEndpointPath(path string) bool {
 	if strings.Count(path, "-") > 0 && strings.Count(path, "/") == 1 {
 		// Path like "/X-Request-ID" - likely a header mistaken as path
 		pathPart := strings.TrimPrefix(path, "/")
-		if strings.Contains(pathPart, "-") && strings.Title(pathPart) == pathPart {
+		if strings.Contains(pathPart, "-") && isHeaderLikeFormat(pathPart) {
 			return false
 		}
 	}
