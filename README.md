@@ -26,7 +26,7 @@ A powerful Go tool that automatically generates Postman collections and environm
 
 ## Installation
 
-### Via go install (Recomendado)
+### Via go install (Recommended)
 
 ```bash
 go install github.com/williamkoller/postman-gen/cmd/postman-gen@latest
@@ -380,8 +380,9 @@ func CreateProduct(w http.ResponseWriter, r *http.Request) {
 **Smart Fallback System:**
 
 If specific structs aren't found, falls back to intelligent variable name analysis:
+
 - Variables containing `user` → User JSON with name, email, id
-- Variables containing `create`/`post` → Creation JSON with name, value, type  
+- Variables containing `create`/`post` → Creation JSON with name, value, type
 - Variables containing `update`/`put`/`patch` → Update JSON with id, name, value
 - Variables containing `request`/`req` → Generic request JSON with data and parameters
 
@@ -652,7 +653,7 @@ usecase/
 delivery/http/
   user_handler.go      // ← Handler using User struct
 
-// 🌐 MVC Pattern  
+// 🌐 MVC Pattern
 models/user.go         // ← Model detected
 controllers/
   user_controller.go   // ← Controller using model
